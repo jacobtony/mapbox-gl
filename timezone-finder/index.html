@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <!-- import jQuery -->
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+    <!-- import Assembly JavaScript -->
+    <!-- <script async defer src='https://api.mapbox.com/mapbox-assembly/v0.21.2/assembly.js'></script> -->
+    <!-- import Assembly CSS -->
+    <!-- <link href='https://api.mapbox.com/mapbox-assembly/v0.21.2/assembly.min.css' rel='stylesheet'> -->
+  </head>
+
+  <body>
+    <!-- the Assembly classes in the div below create a centered div with a top margin of 36px -->
+    <!-- read the Assembly documentation for more info!   -->
+    <div class='mx-auto mt36 w600 prose'>
+      <h2>Timezone finder</h2>
+      <button id='tz-button' class='btn'>Find my timezone!</button>
+      <!-- the textContainer div will display the success, error, and loading messages -->
+      <div class='mt12 ml12' id='textContainer'>
+        <!-- these Assembly classes will add an animation to the loading message! -->
+        <p id='loading-message' class='inline-block round animation-pulse animation--infinite'></p>
+        <p id='return-message'></p>
+      </div>
+    </div>
+
+  </body>
+  <script>
+  
+  var accessToken = 'pk.eyJ1IjoiamFjb2J0b255IiwiYSI6ImNrMzVndXVuODAxNjkzZ25zenZ6YmFleG8ifQ.GKthE-d2TQGj-VQVUnSVHQ'; // add your access token here
+
+var loadingMessage = document.getElementById('loading-message');
+var returnMessage = document.getElementById('return-message');
+
+var tzButton = document.getElementById('tz-button');
+tzButton.onclick = getUserLocation;
+
+function getUserLocation() {
+  // show a loading animation while we wait for the data
+  document.getElementById('loading-message').textContent = 'loading';
+
+  function success(position) {
+    var lon = position.coords.longitude;
+    var lat = position.coords.latitude;
+    var query = 'https://api.mapbox.com/v4/examples.4ze9z6tv/tilequery/' + lon + ',' + lat + '.json?access_token=' + accessToken;
+
+    $.ajax({
+      method: 'GET',
+      url: query,
+    }).done(function(data) {
+      var userTimezone = data.features[0].properties.TZID;
+      // on success, remove the loading message and display the user's timezone
+      loadingMessage.parentNode.removeChild(loadingMessage);
+      returnMessage.textContent = 'You are in the ' + userTimezone + ' timezone.';
+    });
+
+  }
+
+  // if anything goes wrong, remove the loading message and display an error message
+  function error() {
+    loadingMessage.parentNode.removeChild(loadingMessage);
+    returnMessage.textContent = 'Sorry, unable to determine your current location.';
+  }
+
+  navigator.geolocation.getCurrentPosition(success, error);
+}
+  </script>
+
+</html>
